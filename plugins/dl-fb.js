@@ -1,41 +1,51 @@
+const { fetchJson } = require("../lib/functions");
+const { facebook } = require("@mrnima/facebook-downloader");
 const axios = require("axios");
-const { cmd } = require("../command");
+const { cmd, commands } = require('../command');
 
 cmd({
   pattern: "fb",
   alias: ["facebook", "fbdl"],
   desc: "Download Facebook videos",
   category: "download",
-  filename: __filename,
-  use: "<Facebook URL>",
-}, async (conn, m, store, { from, args, q, reply }) => {
+  filename: __filename
+}, async (conn, m, store, { from, q, reply }) => {
   try {
-    // Check if a URL is provided
-    if (!q || !q.startsWith("http")) {
-      return reply("*`Need a valid Facebook URL`*\n\nExample: `.fb https://www.facebook.com/...`");
+    if (!q || !q.startsWith("https://")) {
+      return reply("*Need a valid Facebook URL!*");
     }
 
-    // Add a loading react
     await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-    // Fetch video URL from the API
-    const apiUrl = `https://www.velyn.biz.id/api/downloader/facebookdl?url=${encodeURIComponent(q)}`;
+    const apiUrl = https://lance-frank-asta.onrender.com/api/downloader?url=${encodeURIComponent(q)};
     const { data } = await axios.get(apiUrl);
 
-    // Check if the API response is valid
-    if (!data.status || !data.data || !data.data.url) {
-      return reply("❌ Failed to fetch the video. Please try another link.");
+    if (!data?.content?.status || !data?.content?.data?.result?.length) {
+      throw new Error("Invalid API response or no video found.");
     }
 
-    // Send the video to the user
-    const videoUrl = data.data.url;
+    let videoData = data.content.data.result.find(v => v.quality === "HD") || 
+                    data.content.data.result.find(v => v.quality === "SD");
+
+    if (!videoData) {
+      throw new Error("No valid video URL found.");
+    }
+
     await conn.sendMessage(from, {
-      video: { url: videoUrl },
-      caption: "📥 *Downloaded successful Thanks for using RAVINDU-MD*\n\n- 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚢 𝚁𝙰𝚅𝙸𝙽𝙳𝚄 𝙰𝙺𝙰𝚂𝙷 🗿",
+      video: { url: videoData.url },
+      caption: 📥 *Downloaded in ${videoData.quality} Quality*\n\n>> © ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴀᴠɪɴᴅᴜ-ᴍᴅ
     }, { quoted: m });
 
   } catch (error) {
-    console.error("Error:", error); // Log the error for debugging
-    reply("❌ Error fetching the video. Please try again.");
+    console.error("FB Download Error:", error);
+
+    // Send error details to bot owner
+    const ownerNumber = conn.user.id.split(":")[0] + "@s.whatsapp.net";
+    await conn.sendMessage(ownerNumber, {
+      text: ⚠️ *FB Downloader Error!*\n\n📍 *Group/User:* ${from}\n💬 *Query:* ${q}\n❌ *Error:* ${error.message || error}
+    });
+
+    // Notify the user
+    reply("❌ *Error:* Unable to process the request. Please try again later.");
   }
 });
