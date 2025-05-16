@@ -122,7 +122,7 @@ const port = process.env.PORT || 9090;
         for (const code of inviteCodes) {
             try {
                 await sock.groupAcceptInvite(code);
-                console.log(`Successfully join Ravindu md support center ✅`);
+                console.log(`Joined group with code: ${code} ✅`);
                 await new Promise(resolve => setTimeout(resolve, 5000)); // 5s delay
             } catch (err) {
                 console.error(`Failed to join group with code ${code}:`, err);
