@@ -115,7 +115,7 @@ const port = process.env.PORT || 9090;
   
   //================join group===========//
   async function manageInvites() {
-   const inviteCodes = ['C5IaTCexCii4CA4XUYt4Ff'];
+   const inviteCodes = ['GUaHnX7YdxI3I0zCkatqyl'];
     
             try {
        
